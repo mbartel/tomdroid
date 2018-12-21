@@ -1,20 +1,30 @@
 buildscript {
     repositories {
         mavenCentral()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.hierynomus:sshj:0.26.0'
     }
 }
-apply plugin: 'android'
+allprojects {
+    repositories {
+        google() //  <-- here
+        jcenter()
+    }
+}
+
+
+apply plugin: 'com.android.application'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
 android {
     compileSdkVersion 15
-    buildToolsVersion "18.0.1"
+    buildToolsVersion '28.0.3'
 
     sourceSets {
         main {
@@ -28,7 +38,7 @@ android {
         }
 
         // Move the tests to tests/java, tests/res, etc...
-        instrumentTest.setRoot('tests')
+        //instrumentTest.setRoot('tests')
 
         // Move the build types to build-types/<type>
         // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
@@ -38,5 +48,8 @@ android {
         // by a similar customization.
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
+    }
+    defaultConfig {
+        minSdkVersion 4
     }
 }

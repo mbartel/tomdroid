@@ -1,0 +1,338 @@
+[
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_ic_launcher.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/xml_searchable.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/xml/searchable.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_action_icon_up.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/action_icon_up.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_white_triangle.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/white_triangle.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_ic_shortcut.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/ic_shortcut.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout-sw600dp-land_main.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout-sw600dp-land/main.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_ic_menu_sync.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/ic_menu_sync.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_xml.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/xml.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_button_toggle.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/button_toggle.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_actionbar_shadow.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/actionbar_shadow.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_strings.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/strings.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu-sw600dp-land_edit_note.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu-sw600dp-land/edit_note.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_note_compare.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/note_compare.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_action_icon_up.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/action_icon_up.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_main.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/main.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_drop_shadow_separator.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/drop_shadow_separator.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_note_view.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/note_view.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_ic_menu_sync.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/ic_menu_sync.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_search.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/search.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_text.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/text.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_btn_small_toggle.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/btn_small_toggle.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_action_icon_up.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/action_icon_up.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_ic_launcher.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_file_picker_content_view.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/file_picker_content_view.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_ic_shortcut.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/ic_shortcut.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout-v11_actionbar_indeterminate_progress.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout-v11/actionbar_indeterminate_progress.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_edit_note.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/edit_note.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_actionbar_shadow.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/actionbar_shadow.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_xml.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/xml.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_size.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/size.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_triangle_selector.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/triangle_selector.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_xml.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/xml.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_actionbar_compat_item_pressed.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/actionbar_compat_item_pressed.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_button.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/button.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_highlight.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/highlight.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu-sw600dp-land_view_note.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu-sw600dp-land/view_note.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_text.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/text.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_action_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/action_icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_file.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/file.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_ic_launcher.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_folder.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/folder.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_main_longclick_deleted.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/main_longclick_deleted.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_main_list_item.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/main_list_item.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_drop_shadow.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/drop_shadow.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_tray_handle_normal.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/tray_handle_normal.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_file.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/file.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_main.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/main.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_file_picker_list_item.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/file_picker_list_item.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu-sw600dp-land_main.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu-sw600dp-land/main.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_mono.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/mono.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_ic_menu_sync.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/ic_menu_sync.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_action_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/action_icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_shortcuts_list.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/shortcuts_list.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_action_icon_up.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/action_icon_up.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_folder.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/folder.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_ic_launcher.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/xml_sync_provider.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/xml/sync_provider.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_drop_shadow_selected.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/drop_shadow_selected.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_actionbar_compat.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/actionbar_compat.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_file.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/file.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_text.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/text.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_main_longclick.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/main_longclick.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_actionbar_shadow.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/actionbar_shadow.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_ic_shortcut.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/ic_shortcut.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_folder.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/folder.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_btn_small.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/btn_small.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_note_edit.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/note_edit.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_text.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/text.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_actionbar_shadow.9.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/actionbar_shadow.9.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-xhdpi_ic_menu_sync.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-xhdpi/ic_menu_sync.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_actionbar_compat_item_focused.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/actionbar_compat_item_focused.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu-sw600dp-land_search.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu-sw600dp-land/search.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_ic_shortcut.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/ic_shortcut.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/menu_view_note.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/menu/view_note.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/layout_file_picker_empty_view.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/layout/file_picker_empty_view.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-ldpi_action_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-ldpi/action_icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-hdpi_xml.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-hdpi/xml.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable_actionbar_compat_item.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable/actionbar_compat_item.xml"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/drawable-mdpi_action_icon.png.flat",
+        "source": "/home/mbartel/tomdroid/res/drawable-mdpi/action_icon.png"
+    },
+    {
+        "merged": "/home/mbartel/tomdroid/build/intermediates/res/merged/debug/xml_preferences.xml.flat",
+        "source": "/home/mbartel/tomdroid/res/xml/preferences.xml"
+    }
+]

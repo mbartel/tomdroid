@@ -25,6 +25,7 @@ package org.tomdroid.sync;
 import java.util.ArrayList;
 
 import org.tomdroid.sync.sd.SdCardSyncService;
+import org.tomdroid.sync.ssh.SSHSyncService;
 import org.tomdroid.sync.web.SnowySyncService;
 import org.tomdroid.util.Preferences;
 import android.app.Activity;
@@ -94,6 +95,7 @@ public class SyncManager {
 		
 		services.add(new SnowySyncService(activity, handler));
 		services.add(new SdCardSyncService(activity, handler));
+		services.add(new SSHSyncService(activity, handler));
 	}
 
 	// new methods to TEdit
