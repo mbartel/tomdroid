@@ -3,9 +3,7 @@
  * Tomboy on Android
  * http://www.launchpad.net/tomdroid
  * 
- * Copyright 2009, 2010, 2011 Olivier Bilodeau <olivier@bottomlesspit.org>
  * Copyright 2009, Benoit Garret <benoit.garret_launchpad@gadz.org>
- * Copyright 2010, Rodja Trappe <mail@rodja.net>
  * 
  * This file is part of Tomdroid.
  * 
@@ -25,52 +23,43 @@
 package org.tomdroid.sync.ssh;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
-import android.util.TimeFormatException;
+import android.os.Message;
 
+import net.schmizz.sshj.SSHClient;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.tomdroid.Note;
 import org.tomdroid.NoteManager;
 import org.tomdroid.R;
+import org.tomdroid.sync.ServiceAuth;
 import org.tomdroid.sync.SyncService;
-import org.tomdroid.sync.sd.NoteHandler;
-import org.tomdroid.ui.Tomdroid;
 import org.tomdroid.util.ErrorList;
 import org.tomdroid.util.Preferences;
 import org.tomdroid.util.TLog;
 import org.tomdroid.util.Time;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
+import org.tomdroid.xml.XmlUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+public class SSHSyncService extends SyncService implements ServiceAuth {
 
-public class SSHSyncService extends SyncService {
-
-	private static Pattern note_content = Pattern.compile("<note-content[^>]+>(.*)<\\/note-content>", Pattern.CASE_INSENSITIVE+Pattern.DOTALL);
-
-	// list of notes to sync
-	private ArrayList<Note> syncableNotes = new ArrayList<Note>();;
-
-	// logging related
-	private final static String TAG = "SSHSyncService";
+	private static final String TAG = "SSHSyncService";
+	private String lastGUID;
+	private long latestRemoteRevision = -1;
+	private long latestLocalRevision = -1;
 
 	public SSHSyncService(Activity activity, Handler handler) {
 		super(activity, handler);
 	}
-	
+
 	@Override
 	public int getDescriptionAsId() {
 		return R.string.prefSSH;
@@ -81,410 +70,492 @@ public class SSHSyncService extends SyncService {
 		return "ssh";
 	}
 
+	public boolean isConfigured() {
+		return getAuthConnection().isAuthenticated();
+	}
+
 	@Override
 	public boolean needsServer() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean needsLocation() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean needsAuth() {
-		return true;
+		return !getAuthConnection().isAuthenticated();
+	}
+
+	public void getAuthUri(final String server, final Handler handler) {
+		execInThread(new Runnable() {
+
+			public void run() {
+				final String server = Preferences.getString(Preferences.Key.SYNC_SERVER);
+				final String username = Preferences.getString(Preferences.Key.ACCESS_TOKEN);
+				final String password = Preferences.getString(Preferences.Key.ACCESS_TOKEN_SECRET);
+
+				final Message message = new Message();
+				message.obj = new StringBuilder().append("ssh://").append(username).append(":").append(password).append("@").append(server).toString();
+				handler.sendMessage(message);
+			}
+
+		});
+	}
+
+	public void remoteAuthComplete(final Uri uri, final Handler handler) {
+		execInThread(new Runnable() {
+
+			public void run() {
+				// TODO: might be intelligent to show something like a
+				// progress dialog
+				// else the user might try to sync before the authorization
+				// process
+				// is complete
+				final SSHClient auth = getAuthConnection();
+				boolean result = auth.isAuthenticated();
+
+				if (result) {
+					TLog.i(TAG, "The authorization process is complete.");
+					handler.sendEmptyMessage(AUTH_COMPLETE);
+					return;
+					//sync(true);
+				} else {
+					TLog.e(TAG,
+							"Something went wrong during the authorization process.");
+					sendMessage(AUTH_FAILED);
+				}
+
+				// We don't care what we send, just remove the dialog
+				handler.sendEmptyMessage(0);
+			}
+		});
 	}
 
 	@Override
-	protected void getNotesForSync(boolean push) {
+	public boolean isSyncable() {
+		return super.isSyncable() && isConfigured();
+	}
 
-		setSyncProgress(0);
-		
+	@Override
+	protected void getNotesForSync(final boolean push) {
 		this.push = push;
-		
-		// start loading local notes
-		TLog.v(TAG, "Loading local notes");
-		
-		File path = new File(Tomdroid.NOTES_PATH);
-		
-		if (!path.exists())
-			path.mkdir();
-		
-		TLog.i(TAG, "Path {0} exists: {1}", path, path.exists());
-		
-		// Check a second time, if not the most likely cause is the volume doesn't exist
-		if(!path.exists()) {
-			TLog.w(TAG, "Couldn't create {0}", path);
-			sendMessage(NO_SD_CARD);
-			setSyncProgress(100);
-			return;
-		}
-		
-		File[] fileList = path.listFiles(new NotesFilter());
 
-		if(cancelled) {
-			doCancel();
-			return; 
-		}		
+		// start loading snowy notes
+		setSyncProgress(0);
+		this.lastGUID = null;
 
-		// If there are no notes, just start the sync
-		if (fileList == null || fileList.length == 0) {
-			TLog.i(TAG, "There are no notes in {0}", path);
-			prepareSyncableNotes(syncableNotes);
-			return;
-		}
-		
-	// get all remote notes for sync
-		
-		// every but the last note
-		for(int i = 0; i < fileList.length-1; i++) {
-			if(cancelled) {
-				doCancel();
-				return; 
-			}
-			// TODO better progress reporting from within the workers
-			
-			// give a filename to a thread and ask to parse it
-			syncInThread(new Worker(fileList[i], false, push));
-        }
+		TLog.v(TAG, "Loading Snowy notes");
 
-		if(cancelled) {
-			doCancel();
-			return; 
-		}
-		
-		// last task, warn it so it will know to start sync
-		syncInThread(new Worker(fileList[fileList.length-1], true, push));
-	}
-	
-	/**
-	 * Simple filename filter that grabs files ending with .note
-	 * TODO move into its own static class in a util package
-	 */
-	private class NotesFilter implements FilenameFilter {
-		public boolean accept(File dir, String name) {
-			return (name.endsWith(".note"));
-		}
-	}
-	
-	/**
-	 * The worker spawns a new note, parse the file its being given by the executor.
-	 */
-	// TODO change type to callable to be able to throw exceptions? (if you throw make sure to display an alert only once)
-	// http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/Callable.html
-	private class Worker implements Runnable {
-		
-		// the note to be loaded and parsed
-		private Note note = new Note();
-		private File file;
-		private boolean isLast;
-		final char[] buffer = new char[0x1000];
-		final boolean push;
-		public Worker(File f, boolean isLast, boolean push) {
-			file = f;
-			this.isLast = isLast;
-			this.push = push;
-		}
+		final String userRef = Preferences
+				.getString(Preferences.Key.SYNC_SERVER_USER_API);
 
-		public void run() {
-			
-			note.setFileName(file.getAbsolutePath());
-			// the note guid is not stored in the xml but in the filename
-			note.setGuid(file.getName().replace(".note", ""));
-			
-			// Try reading the file first
-			String contents = "";
-			try {
-				contents = readFile(file,buffer);
-			} catch (IOException e) {
-				e.printStackTrace();
-				TLog.w(TAG, "Something went wrong trying to read the note");
-				sendMessage(PARSING_FAILED, ErrorList.createError(note, e));
-				onWorkDone();
-				return;
-			}
+		syncInThread(new Runnable() {
 
-			try {
-				// Parsing
-		    	// XML 
-		    	// Get a SAXParser from the SAXPArserFactory
-		        SAXParserFactory spf = SAXParserFactory.newInstance();
-		        SAXParser sp = spf.newSAXParser();
-		
-		        // Get the XMLReader of the SAXParser we created
-		        XMLReader xr = sp.getXMLReader();
 
-		        // Create a new ContentHandler, send it this note to fill and apply it to the XML-Reader
-		        NoteHandler xmlHandler = new NoteHandler(note);
-		        xr.setContentHandler(xmlHandler);
+			public void run() {
 
-		        // Create the proper input source
-		        StringReader sr = new StringReader(contents);
-		        InputSource is = new InputSource(sr);
-		        
-				TLog.d(TAG, "parsing note. filename: {0}", file.getName());
-				xr.parse(is);
+				final SSHClient auth = getAuthConnection();
+				latestRemoteRevision = (int)Preferences.getLong(Preferences.Key.LATEST_SYNC_REVISION);
 
-			// TODO wrap and throw a new exception here
-			} catch (Exception e) {
-				e.printStackTrace();
-				if(e instanceof TimeFormatException) TLog.e(TAG, "Problem parsing the note's date and time");
-				sendMessage(PARSING_FAILED, ErrorList.createErrorWithContents(note, e, contents));
-				onWorkDone();
-				return;
-			}
-			
-			// FIXME here we are re-reading the whole note just to grab note-content out, there is probably a better way to do this (I'm talking to you xmlpull.org!)
-			Matcher m = note_content.matcher(contents);
-			if (m.find()) {
-				note.setXmlContent(NoteManager.stripTitleFromContent(m.group(1),note.getTitle()));
-			} else {
-				TLog.w(TAG, "Something went wrong trying to grab the note-content out of a note");
-				sendMessage(PARSING_FAILED, ErrorList.createErrorWithContents(note, "Something went wrong trying to grab the note-content out of a note", contents));
-				onWorkDone();
-				return;
-			}
-			
-			syncableNotes.add(note);
-			onWorkDone();
-		}
-		
-		private void onWorkDone(){
-			if (isLast) {
-				prepareSyncableNotes(syncableNotes);
-			}
-		}
-	}
-
-	private static String readFile(File file, char[] buffer) throws IOException {
-		StringBuilder out = new StringBuilder();
-		
-		int read;
-		Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
-		
-		do {
-		  read = reader.read(buffer, 0, buffer.length);
-		  if (read > 0) {
-		    out.append(buffer, 0, read);
-		  }
-		}
-		while (read >= 0);
-		
-		reader.close();
-		return out.toString();
-	}
-
-	// this function either deletes or pushes, based on existence of deleted tag
-	@Override
-	public void pushNotes(final ArrayList<Note> notes) {
-		if(notes.size() == 0)
-			return;
-		
-		for (Note note : notes) {
-			if(note.getTags().contains("system:deleted")) // deleted note
-				deleteNote(note.getGuid());
-			else
-				pushNote(note);
-		}
-		finishSync(true);
-	}
-
-	// this function is a shell to allow backup function to push as well but send a different message... may not be necessary any more...
-	private void pushNote(Note note){
-		TLog.v(TAG, "pushing note to sdcard");
-		
-		int message = doPushNote(note);
-
-		sendMessage(message);
-	}
-
-	// actually pushes a note to sdcard, with optional subdirectory (e.g. backup)
-	private static int doPushNote(Note note) {
-
-		Note rnote = new Note();
-		try {
-			File path = new File(Tomdroid.NOTES_PATH);
-			
-			if (!path.exists())
-				path.mkdir();
-			
-			TLog.i(TAG, "Path {0} exists: {1}", path, path.exists());
-			
-			// Check a second time, if not the most likely cause is the volume doesn't exist
-			if(!path.exists()) {
-				TLog.w(TAG, "Couldn't create {0}", path);
-				return NO_SD_CARD;
-			}
-			
-			path = new File(Tomdroid.NOTES_PATH + "/"+note.getGuid() + ".note");
-	
-			note.createDate = note.getLastChangeDate().toString();
-			note.cursorPos = 0;
-			note.width = 0;
-			note.height = 0;
-			note.X = -1;
-			note.Y = -1;
-			
-			if (path.exists()) { // update existing note
-	
-				// Try reading the file first
-				String contents = "";
 				try {
-					final char[] buffer = new char[0x1000];
-					contents = readFile(path,buffer);
-				} catch (IOException e) {
-					e.printStackTrace();
-					TLog.w(TAG, "Something went wrong trying to read the note");
-					return PARSING_FAILED;
-				}
-	
-				try {
-					// Parsing
-			    	// XML 
-			    	// Get a SAXParser from the SAXPArserFactory
-			        SAXParserFactory spf = SAXParserFactory.newInstance();
-			        SAXParser sp = spf.newSAXParser();
-			
-			        // Get the XMLReader of the SAXParser we created
-			        XMLReader xr = sp.getXMLReader();
-	
-			        // Create a new ContentHandler, send it this note to fill and apply it to the XML-Reader
-			        NoteHandler xmlHandler = new NoteHandler(rnote);
-			        xr.setContentHandler(xmlHandler);
-	
-			        // Create the proper input source
-			        StringReader sr = new StringReader(contents);
-			        InputSource is = new InputSource(sr);
-			        
-					TLog.d(TAG, "parsing note. filename: {0}", path.getName());
-					xr.parse(is);
-	
-				// TODO wrap and throw a new exception here
+					TLog.v(TAG, "contacting " + userRef);
+					String rawResponse = "dsfsdfs";//auth.get(userRef);
+					if(cancelled) {
+						doCancel();
+						return;
+					}
+					if (rawResponse == null) {
+						sendMessage(CONNECTING_FAILED);
+						setSyncProgress(100);
+						return;
+					}
+
+					setSyncProgress(30);
+
+					try {
+						JSONObject response = new JSONObject(rawResponse);
+
+						// get notes list without content, to check for revision
+
+						String notesUrl = response.getJSONObject("notes-ref").getString("api-ref");
+						rawResponse = "sdfsfsd";//auth.get(notesUrl);
+						response = new JSONObject(rawResponse);
+
+						latestLocalRevision = (Long)Preferences.getLong(Preferences.Key.LATEST_SYNC_REVISION);
+
+						setSyncProgress(35);
+
+						latestRemoteRevision = response.getLong("latest-sync-revision");
+						sendMessage(LATEST_REVISION,(int)latestRemoteRevision,0);
+						TLog.d(TAG, "old latest sync revision: {0}, remote latest sync revision: {1}", latestLocalRevision, latestRemoteRevision);
+
+						Cursor newLocalNotes = NoteManager.getNewNotes(activity);
+
+						// same sync revision + no new local notes = no need to sync
+
+						if (latestRemoteRevision <= latestLocalRevision && newLocalNotes.getCount() == 0) {
+							TLog.v(TAG, "old sync revision on server, cancelling");
+							finishSync(true);
+							return;
+						}
+
+						// don't get notes if older revision - only pushing notes
+
+						if (push && latestRemoteRevision <= latestLocalRevision) {
+							TLog.v(TAG, "old sync revision on server, pushing new notes");
+
+							JSONArray notes = response.getJSONArray("notes");
+							List<String> notesList = new ArrayList<String>();
+							for (int i = 0; i < notes.length(); i++)
+								notesList.add(notes.getJSONObject(i).optString("guid"));
+							prepareSyncableNotes(newLocalNotes);
+							setSyncProgress(50);
+							return;
+						}
+
+						// get notes list with content to find changes
+
+						TLog.v(TAG, "contacting " + notesUrl);
+						sendMessage(SYNC_CONNECTED);
+						rawResponse = "dsfsdfsdf";//auth.get(notesUrl + "?include_notes=true");
+						if(cancelled) {
+							doCancel();
+							return;
+						}
+						response = new JSONObject(rawResponse);
+						latestRemoteRevision = response.getLong("latest-sync-revision");
+						sendMessage(LATEST_REVISION,(int)latestRemoteRevision,0);
+
+						JSONArray notes = response.getJSONArray("notes");
+						setSyncProgress(50);
+
+						TLog.v(TAG, "number of notes: {0}", notes.length());
+
+						ArrayList<Note> notesList = new ArrayList<Note>();
+
+						for (int i = 0; i < notes.length(); i++)
+							notesList.add(new Note(notes.getJSONObject(i)));
+
+						if(cancelled) {
+							doCancel();
+							return;
+						}
+
+						// close cursor
+						newLocalNotes.close();
+						prepareSyncableNotes(notesList);
+
+					} catch (JSONException e) {
+						TLog.e(TAG, e, "Problem parsing the server response");
+						sendMessage(PARSING_FAILED,
+								ErrorList.createErrorWithContents(
+										"JSON parsing", "json", e, rawResponse));
+						setSyncProgress(100);
+						return;
+					}
 				} catch (Exception e) {
-					e.printStackTrace();
-					if(e instanceof TimeFormatException) TLog.e(TAG, "Problem parsing the note's date and time");
-					return PARSING_FAILED;
+					TLog.e(TAG, "Internet connection not available");
+					sendMessage(NO_INTERNET);
+					setSyncProgress(100);
+					return;
 				}
-	
-				note.createDate = rnote.createDate;
-				note.cursorPos = rnote.cursorPos;
-				note.width = rnote.width;
-				note.height = rnote.height;
-				note.X = rnote.X;		
-				note.Y = rnote.Y;
-				
-				note.setTags(rnote.getTags());
+				if(cancelled) {
+					doCancel();
+					return;
+				}
+				if (isSyncable())
+					finishSync(true);
 			}
-			
-			String xmlOutput = note.getXmlFileString();
-			
-			path.createNewFile();
-			FileOutputStream fOut = new FileOutputStream(path);
-			OutputStreamWriter myOutWriter = 
-									new OutputStreamWriter(fOut);
-			myOutWriter.append(xmlOutput);
-			myOutWriter.close();
-			fOut.close();	
-	
-		}
-		catch (Exception e) {
-			TLog.e(TAG, "push to sd card didn't work");
-			return NOTE_PUSH_ERROR;
-		}
-		return NOTE_PUSHED;
+		});
 	}
 
-	private void deleteNote(String guid){
-		try {
-			File path = new File(Tomdroid.NOTES_PATH + "/" + guid + ".note");
-			path.delete();
-		}
-		catch (Exception e) {
-			TLog.e(TAG, "delete from sd card didn't work");
-			sendMessage(NOTE_DELETE_ERROR);
-			return;
-		}
-		sendMessage(NOTE_DELETED);
-
-	}
-	
-	// pull note used for revert
-	@Override
-	protected void pullNote(String guid) {
-		// start loading local notes
-		TLog.v(TAG, "pulling remote note");
-		
-		File path = new File(Tomdroid.NOTES_PATH);
-		
-		if (!path.exists())
-			path.mkdir();
-		
-		TLog.i(TAG, "Path {0} exists: {1}", path, path.exists());
-		
-		// Check a second time, if not the most likely cause is the volume doesn't exist
-		if(!path.exists()) {
-			TLog.w(TAG, "Couldn't create {0}", path);
-			sendMessage(NO_SD_CARD);
-			return;
-		}
-		
-		path = new File(Tomdroid.NOTES_PATH + "/" + guid + ".note");
-
-		syncInThread(new Worker(path, false, false));
-		
-	}
-	
-	// backup function accessed via preferences
-	@Override
-	public void backupNotes() {
-		Note[] notes = NoteManager.getAllNotesAsNotes(activity, true);
-		if(notes != null && notes.length > 0) 
-			for(Note note : notes)
-				doPushNote(note);
-		sendMessage(NOTES_BACKED_UP);
-	}
-
-	// auto backup function on save
-	public static void backupNote(Note note) {
-		doPushNote(note);
-	}
-	
-	@Override
 	public void finishSync(boolean refresh) {
+
 		// delete leftover local notes
 		NoteManager.purgeDeletedNotes(activity);
-		
+
 		Time now = new Time();
 		now.setToNow();
 		String nowString = now.formatTomboy();
 		Preferences.putString(Preferences.Key.LATEST_SYNC_DATE, nowString);
+		Preferences.putLong(Preferences.Key.LATEST_SYNC_REVISION, latestRemoteRevision);
 
 		setSyncProgress(100);
 		if (refresh)
 			sendMessage(PARSING_COMPLETE);
 	}
 
-	@Override
-	public void deleteAllNotes() {
+	private SSHClient getAuthConnection() {
+		final String server = Preferences.getString(Preferences.Key.SYNC_SERVER);
+		final String username = Preferences.getString(Preferences.Key.ACCESS_TOKEN);
+		final String password = Preferences.getString(Preferences.Key.ACCESS_TOKEN_SECRET);
+
+		final SSHClient ssh = new SSHClient();
 		try {
-			File path = new File(Tomdroid.NOTES_PATH);
-			File[] fileList = path.listFiles(new NotesFilter());
-			
-			for(int i = 0; i < fileList.length-1; i++) {
-				fileList[i].delete();
-	        }
+			ssh.loadKnownHosts();
+			ssh.connect(server);
+			try {
+				ssh.authPassword(username, password);
+			} finally {
+				ssh.disconnect();
+			}
+		} catch (final IOException e) {
+			TLog.e(TAG, "Internet connection not available");
+			sendMessage(NO_INTERNET);
 		}
-		catch (Exception e) {
-			TLog.e(TAG, "delete from sd card didn't work");
-			sendMessage(NOTE_DELETE_ERROR);
+
+		return ssh;
+	}
+
+	// push syncable notes
+	@Override
+	public void pushNotes(final ArrayList<Note> notes) {
+		if(notes.size() == 0)
+			return;
+		if(cancelled) {
+			doCancel();
 			return;
 		}
-		TLog.d(TAG, "notes deleted from SD Card");
-		sendMessage(REMOTE_NOTES_DELETED);
+		final String userRef = Preferences
+				.getString(Preferences.Key.SYNC_SERVER_USER_API);
+
+		final long newRevision = Preferences.getLong(Preferences.Key.LATEST_SYNC_REVISION)+1;
+
+		syncInThread(new Runnable() {
+			public void run() {
+				final SSHClient auth = getAuthConnection();
+				try {
+					TLog.v(TAG, "pushing {0} notes to remote service, sending rev #{1}",notes.size(), newRevision);
+					String rawResponse = "test";//auth.get(userRef);
+					if(cancelled) {
+						doCancel();
+						return;
+					}
+					try {
+						TLog.v(TAG, "creating JSON");
+
+						JSONObject data = new JSONObject();
+						data.put("latest-sync-revision", newRevision);
+						JSONArray Jnotes = new JSONArray();
+						for(Note note : notes) {
+							JSONObject Jnote = new JSONObject();
+							Jnote.put("guid", note.getGuid());
+
+							if(note.getTags().contains("system:deleted")) // deleted note
+								Jnote.put("command","delete");
+							else { // changed note
+								Jnote.put("title", XmlUtils.escape(note.getTitle()));
+								Jnote.put("note-content", note.getXmlContent());
+								Jnote.put("note-content-version", "0.1");
+								Jnote.put("last-change-date", note.getLastChangeDate());
+								Jnote.put("create-date", note.getCreateDate());
+								Jnote.put("last-metadata-change-date", note.getLastChangeDate());  // TODO: is this different?
+							}
+							Jnotes.put(Jnote);
+						}
+						data.put("note-changes", Jnotes);
+
+						JSONObject response = new JSONObject(rawResponse);
+						if(cancelled) {
+							doCancel();
+							return;
+						}
+						String notesUrl = response.getJSONObject("notes-ref")
+								.getString("api-ref");
+
+						TLog.v(TAG, "put url: {0}", notesUrl);
+
+						if(cancelled) {
+							doCancel();
+							return;
+						}
+
+						TLog.v(TAG, "pushing data to remote service: {0}",data.toString());
+						response = new JSONObject(); //new JSONObject(auth.put(notesUrl, data.toString()));
+
+						TLog.v(TAG, "put response: {0}", response.toString());
+						latestRemoteRevision = response.getLong("latest-sync-revision");
+						sendMessage(LATEST_REVISION,(int)latestRemoteRevision,0);
+
+					} catch (JSONException e) {
+						TLog.e(TAG, e, "Problem parsing the server response");
+						sendMessage(NOTE_PUSH_ERROR,
+								ErrorList.createErrorWithContents(
+										"JSON parsing", "json", e, rawResponse));
+						return;
+					}
+				} catch (Exception e) {
+					TLog.e(TAG, "Internet connection not available");
+					sendMessage(NO_INTERNET);
+					return;
+				}
+				// success, finish sync
+				finishSync(true);
+			}
+
+		});
+	}
+
+	@Override
+	protected void pullNote(final String guid) {
+
+		// start loading snowy notes
+
+		TLog.v(TAG, "pulling remote note");
+
+		final String userRef = Preferences
+				.getString(Preferences.Key.SYNC_SERVER_USER_API);
+
+		syncInThread(new Runnable() {
+
+			public void run() {
+
+				final SSHClient auth = getAuthConnection();
+
+				try {
+					TLog.v(TAG, "contacting " + userRef);
+					String rawResponse = "resp";//auth.get(userRef);
+
+					try {
+						JSONObject response = new JSONObject(rawResponse);
+						String notesUrl = response.getJSONObject("notes-ref")
+								.getString("api-ref");
+
+						TLog.v(TAG, "contacting " + notesUrl + guid);
+
+						rawResponse = "sfsdfsdf";//auth.get(notesUrl + guid	+ "?include_notes=true");
+
+						response = new JSONObject(rawResponse);
+						JSONArray notes = new JSONArray();
+						// Specifications say to look in the notes array if we receive many notes
+						// However, if we request one single note, it is saved in the "note" array instead.
+						try {
+							notes = response.getJSONArray("notes");
+						} catch (JSONException e) {
+							notes = response.getJSONArray("note");
+						}
+						JSONObject jsonNote = notes.getJSONObject(0);
+
+						TLog.v(TAG, "parsing remote note");
+
+						insertNote(new Note(jsonNote));
+
+					} catch (JSONException e) {
+						TLog.e(TAG, e, "Problem parsing the server response");
+						sendMessage(NOTE_PULL_ERROR,
+								ErrorList.createErrorWithContents(
+										"JSON parsing", "json", e, rawResponse));
+						return;
+					}
+
+				} catch (Exception e) {
+					TLog.e(TAG, "Internet connection not available");
+					sendMessage(NO_INTERNET);
+					return;
+				}
+
+				sendMessage(NOTE_PULLED);
+			}
+		});
+	}
+	public void deleteAllNotes() {
+
+		TLog.v(TAG, "Deleting Snowy notes");
+
+		final String userRef = Preferences.getString(Preferences.Key.SYNC_SERVER_USER_API);
+
+		final long newRevision;
+
+		if(latestLocalRevision > latestRemoteRevision)
+			newRevision = latestLocalRevision+1;
+		else
+			newRevision = latestRemoteRevision+1;
+
+		syncInThread(new Runnable() {
+
+			public void run() {
+
+				final SSHClient auth = getAuthConnection();
+
+				try {
+					TLog.v(TAG, "contacting " + userRef);
+					String rawResponse = "dsfsdfsdf";//auth.get(userRef);
+					if (rawResponse == null) {
+						return;
+					}
+					try {
+						JSONObject response = new JSONObject(rawResponse);
+						String notesUrl = response.getJSONObject("notes-ref").getString("api-ref");
+
+						TLog.v(TAG, "contacting " + notesUrl);
+						response = new JSONObject(); //new JSONObject(auth.get(notesUrl));
+
+						JSONArray notes = response.getJSONArray("notes");
+						setSyncProgress(50);
+
+						TLog.v(TAG, "number of notes: {0}", notes.length());
+
+						ArrayList<String> guidList = new ArrayList<String>();
+
+						for (int i = 0; i < notes.length(); i++) {
+							JSONObject ajnote = notes.getJSONObject(i);
+							guidList.add(ajnote.getString("guid"));
+						}
+
+						TLog.v(TAG, "creating JSON");
+
+						JSONObject data = new JSONObject();
+						data.put("latest-sync-revision",newRevision);
+						JSONArray Jnotes = new JSONArray();
+						for(String guid : guidList) {
+							JSONObject Jnote = new JSONObject();
+							Jnote.put("guid", guid);
+							Jnote.put("command","delete");
+							Jnotes.put(Jnote);
+						}
+						data.put("note-changes", Jnotes);
+
+						response = new JSONObject();// new JSONObject(auth.put(notesUrl,data.toString()));
+
+						TLog.v(TAG, "delete response: {0}", response.toString());
+
+
+						// reset latest sync date so we can push our notes again
+
+						latestRemoteRevision = (int)response.getLong("latest-sync-revision");
+						Preferences.putLong(Preferences.Key.LATEST_SYNC_REVISION, latestRemoteRevision);
+						Preferences.putString(Preferences.Key.LATEST_SYNC_DATE,new Time().formatTomboy());
+
+					} catch (JSONException e) {
+						TLog.e(TAG, e, "Problem parsing the server response");
+						sendMessage(PARSING_FAILED,
+								ErrorList.createErrorWithContents(
+										"JSON parsing", "json", e, rawResponse));
+						setSyncProgress(100);
+						return;
+					}
+				} catch (Exception e) {
+					TLog.e(TAG, "Internet connection not available");
+					sendMessage(NO_INTERNET);
+					setSyncProgress(100);
+					return;
+				}
+				sendMessage(REMOTE_NOTES_DELETED);
+			}
+		});
+	}
+
+	@Override
+	public void backupNotes() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	protected void localSyncComplete() {
+		Preferences.putLong(Preferences.Key.LATEST_SYNC_REVISION, latestRemoteRevision);
 	}
 }
