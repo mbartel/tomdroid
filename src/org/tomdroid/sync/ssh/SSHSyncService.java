@@ -89,19 +89,9 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 	}
 
 	public void getAuthUri(final String server, final Handler handler) {
-		execInThread(new Runnable() {
-
-			public void run() {
-				final String server = Preferences.getString(Preferences.Key.SYNC_SERVER);
-				final String username = Preferences.getString(Preferences.Key.ACCESS_TOKEN);
-				final String password = Preferences.getString(Preferences.Key.ACCESS_TOKEN_SECRET);
-
-				final Message message = new Message();
-				message.obj = Uri.parse(new StringBuilder().append("ssh://").append(username).append(":").append(password).append("@").append(server).toString());
-				handler.sendMessage(message);
-			}
-
-		});
+        final Message message = new Message();
+        message.obj = Uri.parse(Preferences.getString(Preferences.Key.SYNC_SERVER));
+        handler.sendMessage(message);
 	}
 
 	public void remoteAuthComplete(final Uri uri, final Handler handler) {
@@ -287,20 +277,24 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 
 	private SSHClient getAuthConnection() {
 		final String server = Preferences.getString(Preferences.Key.SYNC_SERVER);
-		final String username = Preferences.getString(Preferences.Key.ACCESS_TOKEN);
-		final String password = Preferences.getString(Preferences.Key.ACCESS_TOKEN_SECRET);
+        final Uri authUri = Uri.parse(server);
 
 		final SSHClient ssh = new SSHClient();
 		try {
-			ssh.loadKnownHosts();
-			ssh.connect(server);
+			ssh.connect(authUri.getHost());
+			TLog.e(TAG, authUri.getHost());
 			try {
-				ssh.authPassword(username, password);
+			    final String userInfo = authUri.getUserInfo();
+			    if (userInfo != null && userInfo.contains(":")) {
+                    final String[] userInfos = userInfo.split(":");
+                    ssh.authPassword(userInfos[0], userInfos[1]);
+                }
 			} finally {
 				ssh.disconnect();
 			}
 		} catch (final IOException e) {
 			TLog.e(TAG, "Internet connection not available");
+			TLog.e(TAG, e.getMessage());
 			sendMessage(NO_INTERNET);
 		}
 
