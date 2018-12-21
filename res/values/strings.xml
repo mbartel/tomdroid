@@ -66,7 +66,7 @@
 	<string name="prefSSH" translatable="false">SSH</string>
 	<string name="prefTomboyWeb">Online Synchronization</string>
 	<string name="prefAuthenticate">Authenticate</string>
-	<string name="prefLocation">Location</string>
+	<string name="prefLocation">Location on SD Card</string>
 	<string name="prefSyncOnStart">Autosync on Startup</string>
 	<string name="prefDescSyncOnStart">Synchronise your notes on appstart</string>
 	<!-- placeholder-1 will be repaced by the folder name eg /tomdroid -->

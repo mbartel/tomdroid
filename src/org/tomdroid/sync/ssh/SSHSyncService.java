@@ -45,7 +45,6 @@ import org.tomdroid.util.Time;
 import org.tomdroid.xml.XmlUtils;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +80,7 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 
 	@Override
 	public boolean needsLocation() {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -98,7 +97,7 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 				final String password = Preferences.getString(Preferences.Key.ACCESS_TOKEN_SECRET);
 
 				final Message message = new Message();
-				message.obj = new StringBuilder().append("ssh://").append(username).append(":").append(password).append("@").append(server).toString();
+				message.obj = Uri.parse(new StringBuilder().append("ssh://").append(username).append(":").append(password).append("@").append(server).toString());
 				handler.sendMessage(message);
 			}
 
@@ -250,9 +249,7 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 
 					} catch (JSONException e) {
 						TLog.e(TAG, e, "Problem parsing the server response");
-						sendMessage(PARSING_FAILED,
-								ErrorList.createErrorWithContents(
-										"JSON parsing", "json", e, rawResponse));
+						sendMessage(PARSING_FAILED,	ErrorList.createErrorWithContents("JSON parsing", "json", e, rawResponse));
 						setSyncProgress(100);
 						return;
 					}
@@ -319,8 +316,7 @@ public class SSHSyncService extends SyncService implements ServiceAuth {
 			doCancel();
 			return;
 		}
-		final String userRef = Preferences
-				.getString(Preferences.Key.SYNC_SERVER_USER_API);
+		final String userRef = Preferences.getString(Preferences.Key.SYNC_SERVER_USER_API);
 
 		final long newRevision = Preferences.getLong(Preferences.Key.LATEST_SYNC_REVISION)+1;
 

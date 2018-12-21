@@ -157,7 +157,7 @@ public class PreferencesActivity extends ActionBarPreferenceActivity {
 				String newURL = serverUri.toString();
 				boolean retval = true;
 				
-				if ( !URLUtil.isValidUrl(newURL) || newURL.indexOf(' ') != -1 ) {
+				if ( !(URLUtil.isValidUrl(newURL) || newURL.startsWith("ssh://"))|| newURL.indexOf(' ') != -1 ) {
 					noValidEntry(newURL);
 					retval = false;
 				} else {
